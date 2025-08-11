@@ -1,12 +1,12 @@
 import re, json, ast, pandas as pd
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.neighbors import NearestNeighbors
 import os, pathlib
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder="templates", static_folder="static")
 
-df = pd.read_csv("data/recipes.csv")  
+df = pd.read_csv("data/recipes.csv") 
 
 def norm(s: str) -> str:
 
@@ -54,6 +54,10 @@ def find_recipes(ingredients: str, k: int = 12, require_all: bool = False):
     out = out[keep].head(k).copy()
     out["instructions"] = out["instructions"].apply(_instructions_to_text)
     return out.to_dict(orient="records")
+
+@app.get("/")
+def home():
+    return render_template("index.html")
 
 @app.get("/search")
 def search():

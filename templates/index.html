@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Find My Recipe</title>
+</head>
+<body>
+<header>
+  <h1>FindMyRecipe</h1>
+  <p>Type an ingredient and we’ll find recipes that use it.</p>
+</header>
+
+<section class="search">
+  <input id="ingredient" placeholder="e.g., tomato onion garlic" />
+  <label class="checkbox"><input id="requireAll" type="checkbox" /> require all</label>
+  <button id="go">Search</button>
+</section>
+
+<section id="results" class="results"></section>
+
+<script>
+async function search() {
+  const q = document.getElementById('ingredient').value.trim();
+  const requireAll = document.getElementById('requireAll').checked;
+  if (!q) return;
+  const url = `/search?ingredient=${encodeURIComponent(q)}&require_all=${requireAll}&k=12`;
+  const res = await fetch(url);
+  const data = await res.json();
+  const box = document.getElementById('results');
+
+  if (!data.length) {
+    box.innerHTML = `<p class="empty">No recipes found.</p>`;
+    return;
+  }
+  box.innerHTML = data.map(r => `
+    <article class="card">
+      ${r.image ? `<img src="${r.image}" alt="${r.title}" />` : ``}
+      <div class="meta">
+        <h3>${r.title}</h3>
+        ${r["total time"] ? `<p class="time">${r["total time"]}</p>` : ``}
+      </div>
+      <p class="desc">${r.description ?? ""}</p>
+      <p class="ing"><strong>Ingredients:</strong> ${r.ingredients}</p>
+      <details><summary>Instructions</summary><p>${r.instructions}</p></details>
+    </article>
+  `).join('');
+}
+document.getElementById('go').addEventListener('click', search);
+document.getElementById('ingredient').addEventListener('keydown', e => { if (e.key === 'Enter') search(); });
+</script>
+</body>
+</html>

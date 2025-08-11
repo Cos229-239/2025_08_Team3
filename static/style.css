@@ -1,0 +1,75 @@
+:root { 
+    --bg:#f7f7f9; --card:#fff; --ink:#222; --muted:#666; --accent:#4f7cff; 
+}
+
+* { 
+    box-sizing: border-box; 
+}
+
+body { 
+    margin:0; font-family:system-ui, Arial, sans-serif; color:var(--ink); background:var(--bg); 
+}
+
+header { 
+    padding:32px 20px; text-align:center; 
+}
+
+h1 { 
+    margin:0 0 8px; 
+}
+
+.search { 
+    display:flex; gap:10px; justify-content:center; padding:0 20px 20px; flex-wrap:wrap; 
+}
+
+input#ingredient { 
+    width:min(640px, 92vw); padding:12px 14px; border:1px solid #ddd; border-radius:10px; 
+}
+
+.checkbox { 
+    align-self:center; color:var(--muted); 
+}
+
+button#go { 
+    padding:12px 18px; border:none; border-radius:10px; background:var(--accent); color:#fff; cursor:pointer; 
+}
+
+.results { 
+    display:grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr)); gap:16px; padding:20px; width:min(1200px, 96vw); margin:0 auto 40px; 
+}
+
+.card { 
+    background:var(--card); border:1px solid #eee; border-radius:14px; padding:14px; box-shadow:0 4px 14px rgba(0,0,0,0.06); display:flex; flex-direction:column; gap:8px; 
+}
+
+.card img { 
+    width:100%; height:180px; object-fit:cover; border-radius:10px; 
+}
+
+.card .meta { 
+    display:flex; justify-content:space-between; align-items:baseline; gap:10px; 
+}
+
+.card h3 { 
+    margin:6px 0; font-size:1.05rem; 
+}
+
+.time { 
+    color:var(--muted); font-size:0.9rem; 
+}
+
+.desc { 
+    color:var(--muted); font-size:0.95rem; margin:0; 
+}
+
+.ing { 
+    color:#333; font-size:0.95rem; 
+}
+
+details { 
+    margin-top:4px; 
+}
+
+.empty { 
+    text-align:center; color:var(--muted); width:100%; padding:30px; 
+}

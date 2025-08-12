@@ -1,22 +1,41 @@
-pip install -r requirements.txt
 # FindMyRecipe 🍅🥗
 
-A simple web app where you type in ingredients you have at home, and it finds recipes that include them.  
-Powered by **Flask**, **Pandas**, and a basic **machine learning search** using TF-IDF + Nearest Neighbors.
+FindMyRecipe is a lightweight web app where you simply type in the ingredients you have at home, and it instantly finds recipes that include them. No sign-up, no endless scrolling - just quick meal ideas powered by **Flask**, **Pandas**, and a **machine learning** search using TF-IDF + KNN.
+
+Built by college students for busy students, home cooks, and anyone looking to save time, reduce food waste, and try something new.
+
+---
+
+## 🛑 The Problem
+- People often struggle to decide *what to cook* with what’s in their kitchen.
+- Throwing away unused ingredients leads to food waste and higher grocery bills.
+- Many recipe apps are **overcomplicated**, require exact dish names, or force users to sign up before searching.
+
+---
+
+## 💡 Our Solution
+- **Ingredient-based search:** Type a single ingredient, get matching recipes instantly.
+- **Simple UI:** Just type → browse → cook.
+- **No sign-up:** Fast, hassle-free access.
+- **Food waste reduction:** Encourages use of on-hand ingredients.
 
 ---
 
 ## 📂 Project Structure
 
-2025_08_Team3/
-│── app.py                # Flask backend
-│── data/
-│   └── recipes.csv       # Recipe dataset
-│── templates/
-│   └── index.html        # Main frontend HTML
-│── static/
-│   └── style.css         # Styling
-└── README.md             # This file
+project/  
+│── .github/workflows/         # GitHub Actions workflows (if used)  
+│── data/  
+│   └── recipes.csv            # Recipe dataset  
+│── notebooks/  
+│   └── model.ipynb            # Jupyter notebook for ML model  
+│── src/  
+│   └── app.py                 # Flask backend  
+│── static/  
+│   └── style.css              # Styling  
+│── templates/  
+│   └── index.html             # Main frontend HTML  
+└── README.md                  # This file  
 
 ---
 

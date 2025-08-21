@@ -73,3 +73,32 @@ details {
 .empty { 
     text-align:center; color:var(--muted); width:100%; padding:30px; 
 }
+
+.favorite {
+    fill: #c1c1c1;
+    border: none;
+    border-radius: 5px;
+    margin-top: auto;
+    cursor: pointer;
+    padding: 5px;
+    transition: background 0.3s, fill 0.3s, box-shadow 0.3s;
+    box-shadow: #00000000 0 0 0 0;
+}
+
+    .favorite:hover {
+        background: #e7e7e7;
+        box-shadow: #00000033 0px 6px 7px 0;
+    }
+
+.favorite.favorited {
+    fill: white;
+    background: black;
+}
+
+.favorite.favorited:hover {
+    background: #181818;
+}
+
+.favorite svg{
+    fill: inherit;
+}

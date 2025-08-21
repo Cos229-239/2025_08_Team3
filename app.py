@@ -43,6 +43,7 @@ def find_recipes(ingredients: str, k: int = 12, require_all: bool = False):
     q_vec = vec.transform([q])
     dists, idxs = knn.kneighbors(q_vec, n_neighbors=min(k*5, X.shape[0]))
     out = df.iloc[idxs[0]].copy()
+    out["ID"] = idxs[0]
     out["score"] = (1 - dists[0])  
 
     if require_all:
@@ -50,7 +51,7 @@ def find_recipes(ingredients: str, k: int = 12, require_all: bool = False):
         toks = set(q.split())
         out = out[out["ing_norm"].apply(lambda s: toks.issubset(set(s.split())))]
 
-    keep = ["title", "image", "total time", "ingredients", "instructions", "description", "score"]
+    keep = ["title", "image", "total time", "ingredients", "instructions", "description", "score", "ID"]
     out = out[keep].head(k).copy()
     out["instructions"] = out["instructions"].apply(_instructions_to_text)
     return out.to_dict(orient="records")
@@ -70,3 +71,4 @@ def search():
 
 if __name__ == "__main__":
     app.run(debug=True)
+    

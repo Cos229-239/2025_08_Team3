@@ -280,7 +280,7 @@
 
   <header role="banner" aria-label="Site Header">
     <div class="logo-container">
-      <img class="logo" src="{{ url_for('static', filename='Image/FindMyRecipesBrandLogo_202508112031.png') }}" />
+    <img src="C:\Users\micha\Documents\FindMyRecipe - Website Code\2025_08_Team3\static\Image\FindMyRecipesBrandLogo_20250811203114.png">
       <div>FindMyRecipe</div>
     </div>
     <nav>
@@ -302,9 +302,10 @@
   <script>
   async function search() {
   const q = document.getElementById('ingredient').value.trim();
+  console.log(q);
   const requireAll = document.getElementById('requireAll').checked;
   if (!q) return;
-  const url = `/search?ingredient=${encodeURIComponent(q)}&require_all=${requireAll}&k=12`;
+  const url = `http://localhost:5000/search?ingredient=${encodeURIComponent(q)}&require_all=${requireAll}&k=12`;
   const res = await fetch(url);
   const data = await res.json();
   const box = document.getElementById('results');

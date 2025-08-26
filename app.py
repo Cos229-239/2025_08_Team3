@@ -1,12 +1,19 @@
-import re, json, ast, pandas as pd
+import re
+import ast
+import pandas as pd
 from flask import Flask, request, jsonify, render_template
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.neighbors import NearestNeighbors
-import os, pathlib
+import pathlib
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
 
+app.config["TEMPLATES_AUTO_RELOAD"] = True
+app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 0
+
 df = pd.read_csv("data/recipes.csv") 
+df.reset_index(drop=True, inplace=True)
+df["rid"] = df.index.astype(int)
 
 def norm(s: str) -> str:
 
@@ -43,6 +50,7 @@ def find_recipes(ingredients: str, k: int = 12, require_all: bool = False):
     q_vec = vec.transform([q])
     dists, idxs = knn.kneighbors(q_vec, n_neighbors=min(k*5, X.shape[0]))
     out = df.iloc[idxs[0]].copy()
+    out["ID"] = idxs[0]
     out["score"] = (1 - dists[0])  
 
     if require_all:
@@ -50,7 +58,7 @@ def find_recipes(ingredients: str, k: int = 12, require_all: bool = False):
         toks = set(q.split())
         out = out[out["ing_norm"].apply(lambda s: toks.issubset(set(s.split())))]
 
-    keep = ["title", "image", "total time", "ingredients", "instructions", "description", "score"]
+    keep = ["rid" ,"title", "image", "total time", "ingredients", "instructions", "description", "score"]
     out = out[keep].head(k).copy()
     out["instructions"] = out["instructions"].apply(_instructions_to_text)
     return out.to_dict(orient="records")
@@ -68,5 +76,24 @@ def search():
     results = find_recipes(q, k=k, require_all=require_all)
     return jsonify(results)
 
+@app.get("/recipes")
+def recipes_by_ids():
+    ids_param = request.args.get("ids", "").strip()
+    if not ids_param:
+        return jsonify([])
+    try:
+        ids = [int(x) for x in ids_param.split(",") if x.strip().isdigit()]
+    except Exception:
+        return jsonify([])
+    sub = df[df["rid"].isin(ids)].copy()
+    keep = ["rid","title","image","total time","ingredients","instructions","description"]
+    sub = sub[keep]
+    sub["instructions"] = sub["instructions"].apply(_instructions_to_text)
+    order = {rid:i for i, rid in enumerate(ids)}
+    sub["__order"] = sub["rid"].map(order)
+    sub = sub.sort_values("__order").drop(columns="__order")
+    return jsonify(sub.to_dict(orient="records"))
+
 if __name__ == "__main__":
     app.run(debug=True)
+    

@@ -73,3 +73,11 @@ details {
 .empty { 
     text-align:center; color:var(--muted); width:100%; padding:30px; 
 }
+
+button.secondary {
+  padding:12px 18px; border:1px solid #ddd; border-radius:10px;
+  background:#fff; color:#333; cursor:pointer;
+}
+.right-meta { display:flex; align-items:center; gap:8px; }
+.fav-btn { border:none; background:#eee; border-radius:8px; padding:4px 8px; cursor:pointer; font-size:0.95rem; }
+.fav-btn.active { background:gold; }

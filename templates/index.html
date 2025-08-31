@@ -4,7 +4,6 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Find My Recipe</title>
-  <!-- cache-bust -->
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v=7) }}">
 </head>
 <body>
@@ -48,7 +47,8 @@ function recipeCard(r){
   `;
 }
 
-async function search(){
+async function search()
+{
   const q = document.getElementById('ingredient').value.trim();
   const requireAll = document.getElementById('requireAll').checked;
   if (!q) return;

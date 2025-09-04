@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Find My Recipe</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v=7) }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v=8) }}">
 </head>
 <body>
 <header>
@@ -17,6 +17,15 @@
   <label class="checkbox"><input id="requireAll" type="checkbox" /> require all</label>
   <button id="go">Search</button>
   <button id="showFavs" class="secondary">⭐ Favorites</button>
+  <button id="showHistory" class="secondary">🕘 History</button>
+</section>
+
+<section id="history" class="history" hidden>
+  <div class="history-header">
+    <h2>Recent searches</h2>
+    <button id="clearHistory" class="linklike" title="Clear search history">Clear</button>
+  </div>
+  <ul id="historyList" class="history-list"></ul>
 </section>
 
 <section id="results" class="results"></section>
@@ -28,7 +37,64 @@ function saveFavs(s){ localStorage.setItem(FAV_KEY, JSON.stringify([...s])); }
 function isFav(id){ return getFavs().has(String(id)); }
 function toggleFav(id){ const s=getFavs(), k=String(id); s.has(k)?s.delete(k):s.add(k); saveFavs(s); }
 
-function recipeCard(r){
+const HIST_KEY = "findmyrecipe.history";
+const HIST_LIMIT = 20;
+
+function getHistory(){
+  try { return JSON.parse(localStorage.getItem(HIST_KEY) || "[]"); }
+  catch { return []; }
+}
+function saveHistory(arr){
+  localStorage.setItem(HIST_KEY, JSON.stringify(arr));
+}
+function addToHistory(q, requireAll){
+  if (!q) return;
+  const item = { q, requireAll: !!requireAll, ts: Date.now() };
+  let hist = getHistory().filter(h => !(h.q === q && !!h.requireAll === !!requireAll));
+  hist.unshift(item);
+  if (hist.length > HIST_LIMIT) hist = hist.slice(0, HIST_LIMIT);
+  saveHistory(hist);
+  renderHistory();
+}
+function formatAgo(ts){
+  const diff = Math.max(0, Date.now() - ts);
+  const mins = Math.floor(diff/60000), hrs = Math.floor(mins/60), days = Math.floor(hrs/24);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${days}d ago`;
+}
+function renderHistory(){
+  const list = document.getElementById('historyList');
+  const hist = getHistory();
+  if (!hist.length){
+    list.innerHTML = `<li class="history-empty">No recent searches</li>`;
+    return;
+  }
+  list.innerHTML = hist.map(h => {
+    const safeQ = (h.q || "").replace(/"/g,'&quot;');
+    const label = h.q.length > 60 ? h.q.slice(0,57) + '…' : h.q;
+    return `
+      <li>
+        <button class="history-chip" data-q="${safeQ}" data-all="${h.requireAll ? '1':'0'}" title="Search again">
+          ${label}
+        </button>
+        <span class="history-meta">${h.requireAll ? '• all' : ''} ${h.requireAll ? ' ' : ''}• ${formatAgo(h.ts)}</span>
+      </li>`;
+  }).join('');
+}
+function clearHistory(){
+  localStorage.removeItem(HIST_KEY);
+  renderHistory();
+}
+function toggleHistoryPanel(show){
+  const el = document.getElementById('history');
+  if (typeof show === 'boolean') el.hidden = !show;
+  else el.hidden = !el.hidden;
+}
+
+function recipeCard(r)
+{
   const favActive = isFav(r.rid) ? "active" : "";
   return `
     <article class="card" data-rid="${r.rid}">
@@ -57,6 +123,8 @@ async function search()
   const data = await res.json();
   const box = document.getElementById('results');
   box.innerHTML = data.length ? data.map(recipeCard).join('') : `<p class="empty">No recipes found.</p>`;
+
+  addToHistory(q, requireAll);
 }
 
 document.getElementById('go').addEventListener('click', search);
@@ -75,6 +143,24 @@ document.getElementById('showFavs').addEventListener('click', async () => {
   const res = await fetch(`/recipes?ids=${encodeURIComponent(favIds.join(','))}`);
   const data = await res.json();
   box.innerHTML = data.length ? data.map(recipeCard).join('') : `<p class="empty">Couldn’t load your favorites.</p>`;
+});
+
+document.getElementById('showHistory').addEventListener('click', () => {
+  toggleHistoryPanel();
+  if (!document.getElementById('history').hidden) renderHistory();
+});
+document.getElementById('clearHistory').addEventListener('click', clearHistory);
+document.getElementById('historyList').addEventListener('click', (e) => {
+  const btn = e.target.closest('.history-chip'); if (!btn) return;
+  const q = btn.getAttribute('data-q') || '';
+  const all = btn.getAttribute('data-all') === '1';
+  document.getElementById('ingredient').value = q;
+  document.getElementById('requireAll').checked = all;
+  search();
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (getHistory().length) renderHistory();
 });
 </script>
 </body>

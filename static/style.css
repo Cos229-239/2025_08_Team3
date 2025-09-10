@@ -109,3 +109,116 @@ button.secondary {
   background:none; border:none; color:var(--accent); cursor:pointer; padding:6px 8px; border-radius:8px;
 }
 .linklike:hover { background:rgba(79,124,255,0.08); }
+
+:root {
+  --header-bg: #EAEBEF;
+}
+
+.fm-header {
+  width: 100%;
+  max-width: 1200px;
+  min-height: 60px;
+  background: var(--header-bg);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.08);
+  margin: 20px auto;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 16px;
+  position: sticky;
+  top: 8px;
+  z-index: 10;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: Montserrat, system-ui, Arial, sans-serif;
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: var(--ink);
+  user-select: none;
+}
+
+.logo-container .logo {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+}
+
+.logo-text { letter-spacing: 0.2px; }
+
+.top-nav {
+  display: flex;
+  gap: 12px;
+  margin-left: auto;
+  flex-wrap: wrap;
+}
+
+.top-nav .navlink, .top-nav .navlink:focus {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  background: #fff;
+  color: #333;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.top-nav .navlink:hover {
+  background: rgba(79,124,255,0.08);
+  border-color: #ccc;
+}
+
+#ingredient::placeholder { color: #222; }
+
+@media (max-width: 640px) {
+  .fm-header { gap: 10px; padding: 10px 12px; }
+  .logo-container .logo { height: 32px; }
+  .top-nav { gap: 8px; }
+}
+
+.fm-header {
+  width: 100%;
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--header-bg, #eaebef);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.08);
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+
+.logo {
+  height: 500px;      
+  width: auto;
+  object-fit: contain;
+  user-select: none;
+}
+
+
+.fm-header .logo {
+  height: 80px !important;   
+  width: auto !important;
+  object-fit: contain;
+}
+
+
+.fm-header {
+  min-height: 96px;
+  align-items: center;
+}
+

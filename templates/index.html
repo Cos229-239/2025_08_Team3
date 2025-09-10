@@ -4,20 +4,30 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Find My Recipe</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v=8) }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v=9) }}">
+  <link rel="icon" type="image/png"
+        href="{{ url_for('static', filename='Image/FindMyRecipesBrandLogo_20250811203114.png') }}">
 </head>
 <body>
-<header>
-  <h1>FindMyRecipe</h1>
-  <p>Type an ingredient and we’ll find recipes that use it.</p>
+
+<header role="banner" aria-label="Site Header" class="fm-header">
+  <div class="logo-container">
+    <img class="logo"
+         src="{{ url_for('static', filename='Image/FindMyRecipesBrandLogo_20250811203114.png') }}"
+         alt="FindMyRecipe logo" />
+    <div class="logo-text">FindMyRecipe</div>
+  </div>
+  <nav class="top-nav" aria-label="Primary">
+    <button class="navlink" type="button" id="navHome">Home</button>
+    <button class="navlink" type="button" id="showFavs">⭐ Favorites</button>
+    <button class="navlink" type="button" id="toggleHistory">🕘 History</button>
+  </nav>
 </header>
 
-<section class="search">
-  <input id="ingredient" placeholder="e.g., tomato onion garlic" />
-  <label class="checkbox"><input id="requireAll" type="checkbox" /> require all</label>
-  <button id="go">Search</button>
-  <button id="showFavs" class="secondary">⭐ Favorites</button>
-  <button id="showHistory" class="secondary">🕘 History</button>
+<section class="search" role="search" aria-label="Search for recipes by ingredients">
+  <input id="ingredient" placeholder="e.g., tomato onion garlic" aria-label="Enter ingredients to search recipes" />
+  <label class="checkbox" for="requireAll"><input id="requireAll" type="checkbox" aria-label="Require all ingredients" /> require all</label>
+  <button id="go" aria-label="Search recipes">Search</button>
 </section>
 
 <section id="history" class="history" hidden>
@@ -28,7 +38,7 @@
   <ul id="historyList" class="history-list"></ul>
 </section>
 
-<section id="results" class="results"></section>
+<section id="results" class="results" aria-live="polite" aria-atomic="true"></section>
 
 <script>
 const FAV_KEY = "findmyrecipe.favs";
@@ -39,14 +49,8 @@ function toggleFav(id){ const s=getFavs(), k=String(id); s.has(k)?s.delete(k):s.
 
 const HIST_KEY = "findmyrecipe.history";
 const HIST_LIMIT = 20;
-
-function getHistory(){
-  try { return JSON.parse(localStorage.getItem(HIST_KEY) || "[]"); }
-  catch { return []; }
-}
-function saveHistory(arr){
-  localStorage.setItem(HIST_KEY, JSON.stringify(arr));
-}
+function getHistory(){ try { return JSON.parse(localStorage.getItem(HIST_KEY) || "[]"); } catch { return []; } }
+function saveHistory(arr){ localStorage.setItem(HIST_KEY, JSON.stringify(arr)); }
 function addToHistory(q, requireAll){
   if (!q) return;
   const item = { q, requireAll: !!requireAll, ts: Date.now() };
@@ -79,22 +83,17 @@ function renderHistory(){
         <button class="history-chip" data-q="${safeQ}" data-all="${h.requireAll ? '1':'0'}" title="Search again">
           ${label}
         </button>
-        <span class="history-meta">${h.requireAll ? '• all' : ''} ${h.requireAll ? ' ' : ''}• ${formatAgo(h.ts)}</span>
+        <span class="history-meta">${h.requireAll ? '• all ' : ''}• ${formatAgo(h.ts)}</span>
       </li>`;
   }).join('');
 }
-function clearHistory(){
-  localStorage.removeItem(HIST_KEY);
-  renderHistory();
-}
+function clearHistory(){ localStorage.removeItem(HIST_KEY); renderHistory(); }
 function toggleHistoryPanel(show){
   const el = document.getElementById('history');
-  if (typeof show === 'boolean') el.hidden = !show;
-  else el.hidden = !el.hidden;
+  if (typeof show === 'boolean') el.hidden = !show; else el.hidden = !el.hidden;
 }
 
-function recipeCard(r)
-{
+function recipeCard(r){
   const favActive = isFav(r.rid) ? "active" : "";
   return `
     <article class="card" data-rid="${r.rid}">
@@ -113,8 +112,7 @@ function recipeCard(r)
   `;
 }
 
-async function search()
-{
+async function search(){
   const q = document.getElementById('ingredient').value.trim();
   const requireAll = document.getElementById('requireAll').checked;
   if (!q) return;
@@ -123,7 +121,6 @@ async function search()
   const data = await res.json();
   const box = document.getElementById('results');
   box.innerHTML = data.length ? data.map(recipeCard).join('') : `<p class="empty">No recipes found.</p>`;
-
   addToHistory(q, requireAll);
 }
 
@@ -145,7 +142,7 @@ document.getElementById('showFavs').addEventListener('click', async () => {
   box.innerHTML = data.length ? data.map(recipeCard).join('') : `<p class="empty">Couldn’t load your favorites.</p>`;
 });
 
-document.getElementById('showHistory').addEventListener('click', () => {
+document.getElementById('toggleHistory').addEventListener('click', () => {
   toggleHistoryPanel();
   if (!document.getElementById('history').hidden) renderHistory();
 });
@@ -157,6 +154,10 @@ document.getElementById('historyList').addEventListener('click', (e) => {
   document.getElementById('ingredient').value = q;
   document.getElementById('requireAll').checked = all;
   search();
+});
+
+document.getElementById('navHome').addEventListener('click', () => {
+  window.location.href = "{{ url_for('home') }}";
 });
 
 document.addEventListener('DOMContentLoaded', () => {

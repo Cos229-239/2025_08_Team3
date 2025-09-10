@@ -19,6 +19,7 @@
   </div>
   <nav class="top-nav" aria-label="Primary">
     <button class="navlink" type="button" id="navHome">Home</button>
+    <button class="navlink" type="button" id="navMyRecipes">My Recipes</button>
     <button class="navlink" type="button" id="showFavs">⭐ Favorites</button>
     <button class="navlink" type="button" id="toggleHistory">🕘 History</button>
   </nav>
@@ -33,7 +34,7 @@
 <section id="history" class="history" hidden>
   <div class="history-header">
     <h2>Recent searches</h2>
-    <button id="clearHistory" class="linklike" title="Clear search history">Clear</button>
+    <button id="clearHistory" class="linklike" type="button" title="Clear search history">Clear</button>
   </div>
   <ul id="historyList" class="history-list"></ul>
 </section>
@@ -46,6 +47,16 @@ function getFavs(){ try{ return new Set(JSON.parse(localStorage.getItem(FAV_KEY)
 function saveFavs(s){ localStorage.setItem(FAV_KEY, JSON.stringify([...s])); }
 function isFav(id){ return getFavs().has(String(id)); }
 function toggleFav(id){ const s=getFavs(), k=String(id); s.has(k)?s.delete(k):s.add(k); saveFavs(s); }
+
+const MYREC_KEY = "findmyrecipe.myrecipes";
+function getMyRecipes(){ try{ return new Set(JSON.parse(localStorage.getItem(MYREC_KEY)||"[]")); }catch{ return new Set(); } }
+function saveMyRecipesSet(s){ localStorage.setItem(MYREC_KEY, JSON.stringify([...s])); }
+function isMyRecipe(id){ return getMyRecipes().has(String(id)); }
+function toggleMyRecipe(id){
+  const s = getMyRecipes(), k = String(id);
+  s.has(k) ? s.delete(k) : s.add(k);
+  saveMyRecipesSet(s);
+}
 
 const HIST_KEY = "findmyrecipe.history";
 const HIST_LIMIT = 20;
@@ -95,6 +106,7 @@ function toggleHistoryPanel(show){
 
 function recipeCard(r){
   const favActive = isFav(r.rid) ? "active" : "";
+  const myActive  = isMyRecipe(r.rid) ? "active" : "";
   return `
     <article class="card" data-rid="${r.rid}">
       ${r.image ? `<img src="${r.image}" alt="${r.title}" />` : ``}
@@ -102,6 +114,7 @@ function recipeCard(r){
         <h3>${r.title}</h3>
         <div class="right-meta">
           ${r["total time"] ? `<span class="time">${r["total time"]}</span>` : ``}
+          <button class="save-btn ${myActive}" title="Add/remove from My Recipes" aria-label="Toggle My Recipes">➕</button>
           <button class="fav-btn ${favActive}" title="Toggle favorite" aria-label="Toggle favorite">★</button>
         </div>
       </div>
@@ -128,9 +141,22 @@ document.getElementById('go').addEventListener('click', search);
 document.getElementById('ingredient').addEventListener('keydown', e => { if (e.key === 'Enter') search(); });
 
 document.getElementById('results').addEventListener('click', (e) => {
-  const btn = e.target.closest('.fav-btn'); if (!btn) return;
-  const card = e.target.closest('.card'); const rid = card?.getAttribute('data-rid'); if (!rid) return;
-  toggleFav(rid); btn.classList.toggle('active', isFav(rid));
+  const card = e.target.closest('.card'); if (!card) return;
+  const rid = card.getAttribute('data-rid'); if (!rid) return;
+
+  const favBtn = e.target.closest('.fav-btn');
+  if (favBtn) {
+    toggleFav(rid);
+    favBtn.classList.toggle('active', isFav(rid));
+    return;
+  }
+
+  const saveBtn = e.target.closest('.save-btn');
+  if (saveBtn) {
+    toggleMyRecipe(rid);
+    saveBtn.classList.toggle('active', isMyRecipe(rid));
+    return;
+  }
 });
 
 document.getElementById('showFavs').addEventListener('click', async () => {
@@ -142,11 +168,33 @@ document.getElementById('showFavs').addEventListener('click', async () => {
   box.innerHTML = data.length ? data.map(recipeCard).join('') : `<p class="empty">Couldn’t load your favorites.</p>`;
 });
 
+async function showMyRecipes(){
+  const ids = [...getMyRecipes()];
+  const box = document.getElementById('results');
+  if (!ids.length){
+    box.innerHTML = `<p class="empty">No recipes saved yet. Add some ➕</p>`;
+    return;
+  }
+  const res = await fetch(`/recipes?ids=${encodeURIComponent(ids.join(','))}`);
+  const data = await res.json();
+  box.innerHTML = data.length ? data.map(recipeCard).join('')
+                              : `<p class="empty">Couldn’t load your recipes.</p>`;
+}
+document.getElementById('navMyRecipes').addEventListener('click', showMyRecipes);
+
+
 document.getElementById('toggleHistory').addEventListener('click', () => {
   toggleHistoryPanel();
   if (!document.getElementById('history').hidden) renderHistory();
 });
-document.getElementById('clearHistory').addEventListener('click', clearHistory);
+
+document.addEventListener('click', (e) => {
+  if (e.target.closest('#clearHistory')) {
+    e.preventDefault();
+    clearHistory();
+  }
+});
+
 document.getElementById('historyList').addEventListener('click', (e) => {
   const btn = e.target.closest('.history-chip'); if (!btn) return;
   const q = btn.getAttribute('data-q') || '';

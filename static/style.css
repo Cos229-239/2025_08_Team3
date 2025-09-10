@@ -1,5 +1,10 @@
 :root { 
-    --bg:#f7f7f9; --card:#fff; --ink:#222; --muted:#666; --accent:#4f7cff; 
+    --bg:#f7f7f9; 
+    --card:#fff; 
+    --ink:#222; 
+    --muted:#666; 
+    --accent:#4f7cff;
+    --header-bg: #EAEBEF;
 }
 
 * { 
@@ -7,7 +12,16 @@
 }
 
 body { 
-    margin:0; font-family:system-ui, Arial, sans-serif; color:var(--ink); background:var(--bg); 
+    margin: 0; 
+    font-family: 'Montserrat', 'Montserrat Alternetes', system-ui, Arial, sans-serif; 
+    color: var(--ink); 
+    background: var(--bg); 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+    align-items: center;
 }
 
 header { 
@@ -31,15 +45,20 @@ input#ingredient {
 }
 
 button#go { 
-    padding:12px 18px; border:none; border-radius:10px; background:var(--accent); color:#fff; cursor:pointer; 
+    padding:12px 18px; border:none; border-radius:10px; background:var(--accent);
+    color:#fff; cursor:pointer; 
 }
 
 .results { 
-    display:grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr)); gap:16px; padding:20px; width:min(1200px, 96vw); margin:0 auto 40px; 
+    display:grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr));
+    gap:16px; padding:20px; width:min(1200px, 96vw); margin:0 auto 40px; 
 }
 
 .card { 
-    background:var(--card); border:1px solid #eee; border-radius:14px; padding:14px; box-shadow:0 4px 14px rgba(0,0,0,0.06); display:flex; flex-direction:column; gap:8px; 
+    background: var(--card); border: 1px solid #eee; 
+    border-radius: 14px; padding: 14px; 
+    box-shadow: 0 4px 14px rgba(0,0,0,0.06); display: flex; 
+    flex-direction: column; gap: 8px; 
 }
 
 .card img { 
@@ -110,10 +129,6 @@ button.secondary {
 }
 .linklike:hover { background:rgba(79,124,255,0.08); }
 
-:root {
-  --header-bg: #EAEBEF;
-}
-
 .fm-header {
   width: 100%;
   max-width: 1200px;
@@ -155,6 +170,7 @@ button.secondary {
   gap: 12px;
   margin-left: auto;
   flex-wrap: wrap;
+  font-family: 'Montserrat', 'Montserrat Alternates', system-ui, Arial, sans-serif;
 }
 
 .top-nav .navlink, .top-nav .navlink:focus {
@@ -166,11 +182,13 @@ button.secondary {
   cursor: pointer;
   font-weight: 600;
   font-size: 0.95rem;
+  font-family: 'Montserrat', 'Montserrat Alternates', sans-serif;
 }
 
 .top-nav .navlink:hover {
   background: rgba(79,124,255,0.08);
   border-color: #ccc;
+  font-family: 'Montserrat', 'Montserrat Alternates',sans-serif;
 }
 
 #ingredient::placeholder { color: #222; }

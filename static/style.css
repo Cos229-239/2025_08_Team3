@@ -159,8 +159,28 @@ button.secondary {
 
 .logo-text { letter-spacing: 0.2px; }
 
+#navHomeLogo { cursor:pointer; }
+button.navbar-toggle {
+  width: 50px;
+  height: 50px;
+  border-color: #ccc;
+  border-style: solid;
+  border-radius: 7px;
+  background-color:white;
+}
+button.navbar-toggle .navbar-toggle-icon {
+  display: block;
+  width: 1.65rem;
+  height: 1.65rem;
+  margin:0 auto;
+  background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba%280,0,0,0.55%29' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
 .top-nav {
   display: flex;
+  width:100%;
   gap: 12px;
   margin-left: auto;
   flex-wrap: wrap;
@@ -168,21 +188,29 @@ button.secondary {
 }
 
 .top-nav .navlink, .top-nav .navlink:focus {
-  padding: 10px 14px;
-  border-radius: 10px;
-  border: 1px solid #ddd;
-  background: #fff;
+  background:transparent;
+  border:none;
+  border-top:1px #ccc solid;
+  width:100%;
+  padding:1rem;
   color: #333;
   cursor: pointer;
-  font-weight: 600;
-  font-size: 0.95rem;
+  font-weight: 400;
+  font-size: 1.2rem;
   font-family: 'Montserrat', 'Montserrat Alternates', sans-serif;
+}
+
+.top-nav .navlink.active {
+  background:white;
+  font-weight:600;
+  cursor:initial;
 }
 
 .top-nav .navlink:hover {
   background: rgba(79,124,255,0.08);
-  border-color: #ccc;
-  font-family: 'Montserrat', 'Montserrat Alternates',sans-serif;
+}
+.top-nav .navlink.active:hover {
+  background:white;
 }
 
 #ingredient::placeholder { color: #222; }
@@ -240,3 +268,7 @@ button.secondary {
 }
 .save-btn.active { background:var(--accent); color:#fff; }
 
+@media(min-width:992px) {
+  .top-nav .navlink, .top-nav .navlink:focus { border:none; border-radius:10px; }
+  button.navbar-toggle { display:none; }
+}

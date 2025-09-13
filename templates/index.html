@@ -7,21 +7,34 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v=9) }}">
   <link rel="icon" type="image/png"
         href="{{ url_for('static', filename='Image/FindMyRecipesBrandLogo_20250811203114.png') }}">
+
+  <!-- BOOTSTRAP (nav hamburger menu) -->
+  <!-- served using CDN - need internet -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
 
 <header role="banner" aria-label="Site Header" class="fm-header">
-  <div class="logo-container">
-    <img class="logo"
+  <nav class="top-nav navbar navbar-expand-lg" aria-label="Primary">
+    <div class="container-fluid">
+      <a id="navHomeLogo" class="navbar-brand logo-container">
+        <img class="logo"
          src="{{ url_for('static', filename='Image/FindMyRecipesBrandLogo_20250811203114.png') }}"
          alt="FindMyRecipe logo" />
-    <div class="logo-text">FindMyRecipe</div>
-  </div>
-  <nav class="top-nav" aria-label="Primary">
-    <button class="navlink" type="button" id="navHome">Home</button>
-    <button class="navlink" type="button" id="navMyRecipes">My Recipes</button>
-    <button class="navlink" type="button" id="showFavs">⭐ Favorites</button>
-    <button class="navlink" type="button" id="toggleHistory">🕘 History</button>
+        <div class="logo-text">FindMyRecipe</div>
+      </a>
+      <button class="navbar-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle Navigation">
+        <span class="navbar-toggle-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><button class="navlink active" type="button" id="navHome">Home</button></li>
+          <li class="nav-item"><button class="navlink" type="button" id="navMyRecipes">My Recipes</button></li>
+          <li class="nav-item"><button class="navlink" type="button" id="showFavs">⭐ Favorites</button></li>
+          <li class="nav-item"><button class="navlink" type="button" id="toggleHistory">🕘 History</button></li>
+        </ul>
+      </div>
   </nav>
 </header>
 
@@ -160,12 +173,14 @@ document.getElementById('results').addEventListener('click', (e) => {
 });
 
 document.getElementById('showFavs').addEventListener('click', async () => {
+  setActiveNavItem('showFavs');
   const favIds = [...getFavs()];
   const box = document.getElementById('results');
   if (!favIds.length){ box.innerHTML = `<p class="empty">No favorites yet. Add some ★</p>`; return; }
   const res = await fetch(`/recipes?ids=${encodeURIComponent(favIds.join(','))}`);
   const data = await res.json();
   box.innerHTML = data.length ? data.map(recipeCard).join('') : `<p class="empty">Couldn’t load your favorites.</p>`;
+  closeMenuAfterClick();
 });
 
 async function showMyRecipes(){
@@ -180,12 +195,18 @@ async function showMyRecipes(){
   box.innerHTML = data.length ? data.map(recipeCard).join('')
                               : `<p class="empty">Couldn’t load your recipes.</p>`;
 }
-document.getElementById('navMyRecipes').addEventListener('click', showMyRecipes);
+document.getElementById('navMyRecipes').addEventListener('click', function() {
+  setActiveNavItem('navMyRecipes');
+  showMyRecipes();
+  closeMenuAfterClick();
+});
 
 
 document.getElementById('toggleHistory').addEventListener('click', () => {
+  setActiveNavItem('toggleHistory');
   toggleHistoryPanel();
   if (!document.getElementById('history').hidden) renderHistory();
+  closeMenuAfterClick();
 });
 
 document.addEventListener('click', (e) => {
@@ -205,12 +226,36 @@ document.getElementById('historyList').addEventListener('click', (e) => {
 });
 
 document.getElementById('navHome').addEventListener('click', () => {
+  setActiveNavItem('navHome');
+  window.location.href = "{{ url_for('home') }}";
+});
+document.getElementById('navHomeLogo').addEventListener('click', () => {
+  setActiveNavItem('navHome');
   window.location.href = "{{ url_for('home') }}";
 });
 
 document.addEventListener('DOMContentLoaded', () => {
   if (getHistory().length) renderHistory();
 });
+
+function setActiveNavItem(id) {
+  // Remove 'active' from all nav buttons
+  document.querySelectorAll('.navlink').forEach(btn => btn.classList.remove('active'));
+
+  // add 'active' to passed id
+  const el = document.getElementById(id);
+  if (el) el.classList.add('active');
+}
+function closeMenuAfterClick() {
+  document.querySelectorAll('.navlink').forEach(btn => {
+    const navbarCollapse = document.querySelector('.navbar-collapse');
+    if(navbarCollapse.classList.contains('show')) {
+      // Bootstrap's collapse API
+      const bsCollapse = bootstrap.Collapse.getInstance(navbarCollapse);
+      bsCollapse.hide();
+    }
+  });
+}
 </script>
 </body>
 </html>

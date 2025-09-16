@@ -30,7 +30,7 @@
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto">
           <li class="nav-item"><button class="navlink active" type="button" id="navHome">Home</button></li>
-          <li class="nav-item"><button class="navlink" type="button" id="navMyRecipes">My Recipes</button></li>
+          <li class="nav-item"><button class="navlink" type="button" id="navMyPantry">My Pantry</button></li>
           <li class="nav-item"><button class="navlink" type="button" id="showFavs">⭐ Favorites</button></li>
           <li class="nav-item"><button class="navlink" type="button" id="toggleHistory">🕘 History</button></li>
         </ul>
@@ -52,6 +52,41 @@
   <ul id="historyList" class="history-list"></ul>
 </section>
 
+<section id="myPantry" class="container my-4" hidden>
+  <h2>My Pantry</h2>
+
+  <!-- add form -->
+  <form id="myPantryForm">
+    <h3>Add an item to your pantry</h3>
+    <div class="formBox big">
+      <input type="text" id="myPantryItem" class="form-control" placeholder="Item name" required />
+    </div>
+    <div class="formBox small">
+      <input type="number" id="myPantryQty" class="form-control" min="0" step="0.25" value="1" required />
+    </div>
+    <div class="formBox med">
+      <select id="myPantryUnit" class="form-select">
+        <option value="qty">qty</option>
+        <option value="cups">cups</option>
+        <option value="tbsp">Tbsp</option>
+        <option value="tsp">tsp</option>
+      </select>
+    </div>
+    <div class="formBox small">
+      <button type="submit" class="btn btn-primary w-100">Add</button>
+    </div>
+  </form>
+
+  <!-- list -->
+  <ul id="myPantryList" class="list-group"></ul>
+  <p id="myPantryEmpty" class="text-muted mt-2"></p>
+
+  <!-- search -->
+  <div class="mt-3 text-center">
+    <button id="myPantrySearch" class="btn btn-success" disabled>Search using My Pantry</button>
+  </div>
+</section>
+
 <section id="results" class="results" aria-live="polite" aria-atomic="true"></section>
 
 <script>
@@ -61,14 +96,34 @@ function saveFavs(s){ localStorage.setItem(FAV_KEY, JSON.stringify([...s])); }
 function isFav(id){ return getFavs().has(String(id)); }
 function toggleFav(id){ const s=getFavs(), k=String(id); s.has(k)?s.delete(k):s.add(k); saveFavs(s); }
 
-const MYREC_KEY = "findmyrecipe.myrecipes";
-function getMyRecipes(){ try{ return new Set(JSON.parse(localStorage.getItem(MYREC_KEY)||"[]")); }catch{ return new Set(); } }
-function saveMyRecipesSet(s){ localStorage.setItem(MYREC_KEY, JSON.stringify([...s])); }
-function isMyRecipe(id){ return getMyRecipes().has(String(id)); }
-function toggleMyRecipe(id){
-  const s = getMyRecipes(), k = String(id);
-  s.has(k) ? s.delete(k) : s.add(k);
-  saveMyRecipesSet(s);
+const PANTRY_KEY = "findmyrecipe.mypantry";
+function getMyPantry(){
+  try{
+    const raw = JSON.parse(localStorage.getItem(PANTRY_KEY)||"[]");
+    return Array.isArray(raw) ? raw : [];
+  } catch { 
+    return [];
+  }
+}
+function saveMyPantrySet(s){ localStorage.setItem(PANTRY_KEY, JSON.stringify([...s])); }
+/* add or update an item */
+function upsertPantryItem(name,qty,unit){
+  const items = getMyPantry();
+  const key = name.trim().toLowerCase();
+  const idx = items.findIndex(it => it.key === key);
+
+  const record = { key, name: name.trim(), qty: Number(qty), unit };
+  if(idx >= 0) items[idx] = record; // update
+  else items.push(record); // add
+
+  saveMyPantrySet(items);
+  return items;
+}
+/* remove item */
+function removePantryItem(key) {
+  const items = getMyPantry().filter(it => it.key !== key);
+  saveMyPantrySet(items);
+  return items;
 }
 
 const HIST_KEY = "findmyrecipe.history";
@@ -119,7 +174,6 @@ function toggleHistoryPanel(show){
 
 function recipeCard(r){
   const favActive = isFav(r.rid) ? "active" : "";
-  const myActive  = isMyRecipe(r.rid) ? "active" : "";
   return `
     <article class="card" data-rid="${r.rid}">
       ${r.image ? `<img src="${r.image}" alt="${r.title}" />` : ``}
@@ -127,7 +181,6 @@ function recipeCard(r){
         <h3>${r.title}</h3>
         <div class="right-meta">
           ${r["total time"] ? `<span class="time">${r["total time"]}</span>` : ``}
-          <button class="save-btn ${myActive}" title="Add/remove from My Recipes" aria-label="Toggle My Recipes">➕</button>
           <button class="fav-btn ${favActive}" title="Toggle favorite" aria-label="Toggle favorite">★</button>
         </div>
       </div>
@@ -163,19 +216,16 @@ document.getElementById('results').addEventListener('click', (e) => {
     favBtn.classList.toggle('active', isFav(rid));
     return;
   }
-
-  const saveBtn = e.target.closest('.save-btn');
-  if (saveBtn) {
-    toggleMyRecipe(rid);
-    saveBtn.classList.toggle('active', isMyRecipe(rid));
-    return;
-  }
 });
 
 document.getElementById('showFavs').addEventListener('click', async () => {
   setActiveNavItem('showFavs');
   const favIds = [...getFavs()];
   const box = document.getElementById('results');
+  // switch panel
+  box.hidden = false; // make visible
+  document.getElementById('myPantry').hidden = true; // hide mypantry
+  // fill results
   if (!favIds.length){ box.innerHTML = `<p class="empty">No favorites yet. Add some ★</p>`; return; }
   const res = await fetch(`/recipes?ids=${encodeURIComponent(favIds.join(','))}`);
   const data = await res.json();
@@ -183,29 +233,110 @@ document.getElementById('showFavs').addEventListener('click', async () => {
   closeMenuAfterClick();
 });
 
-async function showMyRecipes(){
-  const ids = [...getMyRecipes()];
-  const box = document.getElementById('results');
-  if (!ids.length){
-    box.innerHTML = `<p class="empty">No recipes saved yet. Add some ➕</p>`;
+// UI elements
+const pantryForm = document.getElementById('myPantryForm');
+const pantryItem = document.getElementById('myPantryItem');
+const pantryQty = document.getElementById('myPantryQty');
+const pantryUnit = document.getElementById('myPantryUnit');
+const pantryList = document.getElementById('myPantryList');
+const pantryEmpty = document.getElementById('myPantryEmpty');
+const pantrySearch = document.getElementById('myPantrySearch')
+// render UI
+function renderMyPantry(){
+  const items = getMyPantry();
+  pantryList.innerHTML = ""; // clear
+
+  if(!items.length) { // no items
+    pantryEmpty.hidden = false;
+    pantrySearch.disabled = true;
     return;
   }
-  const res = await fetch(`/recipes?ids=${encodeURIComponent(ids.join(','))}`);
-  const data = await res.json();
-  box.innerHTML = data.length ? data.map(recipeCard).join('')
-                              : `<p class="empty">Couldn’t load your recipes.</p>`;
+  pantryEmpty.hidden = true;
+  pantrySearch.disabled = false;
+
+  items.forEach(item => {
+    const li = document.createElement("li");
+    li.className = "list-group-item d-flex justify-content-between align-items-center";
+    li.dataset.key = item.key;
+
+    li.innerHTML = `
+      <div>
+        <strong>${item.name}</strong>
+      </div>
+      <div class="d-flex align-items-center gap-2 justify-content-end">
+        <input type="number" step="0.25" value="${item.qty}" class="form-control pantry-qty" />
+        <span class="pantry-unit">${item.unit}</span>
+        <button class="btn btn-sm btn-success pantry-save" disabled>Save</button>
+        <button class="btn btn-sm btn-danger pantry-remove">Remove</button>
+      </div>
+    `;
+
+    pantryList.appendChild(li);
+  });
 }
-document.getElementById('navMyRecipes').addEventListener('click', function() {
-  setActiveNavItem('navMyRecipes');
-  showMyRecipes();
-  closeMenuAfterClick();
+
+// events
+pantryForm.addEventListener('submit', e => {
+  e.preventDefault();
+  // add item
+  upsertPantryItem(pantryItem.value, pantryQty.value, pantryUnit.value);
+  // reset
+  pantryForm.reset();
+  pantryUnit.value = "qty";
+  // rerender
+  renderMyPantry();
+});
+pantryList.addEventListener('input', e => {
+  const li = e.target.closest('li');
+  if(!li) return;
+  // listen for input on pantry-qty
+  if(e.target.classList.contains("pantry-qty")) {
+    const saveBtn = li.querySelector(".pantry-save");
+    saveBtn.disabled = false; // allow save
+  }
+});
+pantryList.addEventListener('click', e => {
+  const li = e.target.closest("li");
+  if(!li) return;
+  const key = li.dataset.key;
+  // listen for clicks on remove button
+  if(e.target.classList.contains("pantry-remove")) {
+    removePantryItem(key);
+    renderMyPantry();
+  }
+  // listen for cliscks on save button
+  if(e.target.classList.contains("pantry-save")) {
+    const newQty = li.querySelector(".pantry-qty").value;
+    const items = getMyPantry();
+    // find item
+    const item = items.find(it => it.key === key);
+    if(item) {
+      item.qty = Number(newQty); // update qty
+      saveMyPantrySet(items); // save
+    }
+    renderMyPantry(); // update UI
+  }
 });
 
+// menu events
+document.getElementById('navMyPantry').addEventListener('click', function() {
+  document.getElementById('results').hidden = true;
+  document.getElementById('history').hidden = true;
 
+  // show pantry
+  document.getElementById('myPantry').hidden = false;
+  setActiveNavItem('navMyPantry');
+  renderMyPantry();
+  closeMenuAfterClick();
+});
 document.getElementById('toggleHistory').addEventListener('click', () => {
   setActiveNavItem('toggleHistory');
   toggleHistoryPanel();
-  if (!document.getElementById('history').hidden) renderHistory();
+  if (!document.getElementById('history').hidden) {
+    renderHistory();
+    document.getElementById("myPantry").hidden = true;
+    document.getElementById('results').hidden = false;
+  }
   closeMenuAfterClick();
 });
 
@@ -223,14 +354,17 @@ document.getElementById('historyList').addEventListener('click', (e) => {
   document.getElementById('ingredient').value = q;
   document.getElementById('requireAll').checked = all;
   search();
+  setActiveNavItem('navHome');
 });
 
 document.getElementById('navHome').addEventListener('click', () => {
   setActiveNavItem('navHome');
+  document.getElementById("myPantry").hidden = true;
   window.location.href = "{{ url_for('home') }}";
 });
 document.getElementById('navHomeLogo').addEventListener('click', () => {
   setActiveNavItem('navHome');
+  document.getElementById("myPantry").hidden = true;
   window.location.href = "{{ url_for('home') }}";
 });
 

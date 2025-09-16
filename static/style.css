@@ -272,3 +272,35 @@ button.navbar-toggle .navbar-toggle-icon {
   .top-nav .navlink, .top-nav .navlink:focus { border:none; border-radius:10px; }
   button.navbar-toggle { display:none; }
 }
+
+/* MY PANTRY STYLES */
+#myPantry {
+  width: 100%;
+  max-width: 768px;
+  margin: 20px auto;
+}
+#myPantryForm {
+  width: 100%;
+  max-width: 768px;
+  margin: 20px auto;
+  padding: 10px 16px;
+  display: flex;
+  flex-wrap:wrap;
+  align-items: center;
+  gap: 12px;
+  background: var(--header-bg, #eaebef);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.08);
+}
+#myPantryForm h3 {
+  font-size:1.2rem;
+  width:100%;
+  color:#555;
+  margin-bottom:0;
+}
+#myPantryForm .formBox { flex-grow:1; }
+#myPantryForm .formBox.small { max-width:10%; }
+#myPantryForm .formBox.med { max-width:15%; }
+#myPantryForm .formBox.big { max-width:65%; }
+.pantry-qty { max-width:25%; }
+.pantry-unit { width:15%; display:block; }

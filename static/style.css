@@ -302,20 +302,14 @@ body{
   padding-left: .1rem;
   line-height: 1.4;
   color: var(--ink);
+  user-select: none;
 }
-.recipe-modal .modal-title{ font-weight: 800; }
-.recipe-modal .badge{
-  background: var(--surface-2) !important;
-  color: var(--ink) !important;
-  border: 1px solid var(--border) !important;
-}
-
-.card.wide .title {                    
+.recipe-modal .step-bullets .step{
+  break-inside: avoid;     
+  margin: 0 0 .55rem 0;
+  padding-left: .1rem;
+  line-height: 1.4;
   color: var(--ink);
-}
-
-.card.wide .time {
-  color: var(--muted);
 }
 
 :root[data-theme="dark"] .card.wide .title {
@@ -364,3 +358,83 @@ body{
 .navbar .navbar-brand span {
   margin-left: -4px;    
 }
+
+/* MY PANTRY STYLES */
+#myPantry {
+  width: 100%;
+  max-width: 768px;
+  margin: 20px auto;
+}
+#myPantryForm {
+  width: 100%;
+  max-width: 768px;
+  margin: 20px auto;
+  padding: 10px 16px;
+  display: flex;
+  flex-wrap:wrap;
+  align-items: center;
+  gap: 12px;
+  background: var(--header-bg, #eaebef);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.08);
+}
+#myPantryForm h3 {
+  font-size:1.2rem;
+  width:100%;
+  color:#555;
+  margin-bottom:0;
+}
+
+
+.fm-header .logo {
+  height: 80px !important;   
+  width: auto !important;
+  object-fit: contain;
+}
+
+
+.fm-header {
+  min-height: 96px;
+  align-items: center;
+}
+
+.navbar .navbar-brand,
+.logo-container {
+  gap: 6px !important;   
+}
+
+.navbar .navbar-brand span {
+  margin-left: -4px;    
+}
+
+/* MY PANTRY STYLES */
+#myPantry {
+  width: 100%;
+  max-width: 768px;
+  margin: 20px auto;
+}
+#myPantryForm {
+  width: 100%;
+  max-width: 768px;
+  margin: 20px auto;
+  padding: 10px 16px;
+  display: flex;
+  flex-wrap:wrap;
+  align-items: center;
+  gap: 12px;
+  background: var(--header-bg, #eaebef);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.08);
+}
+#myPantryForm h3 {
+  font-size:1.2rem;
+  width:100%;
+  color:#555;
+  margin-bottom:0;
+}
+#myPantryForm .formBox { flex-grow:1; }
+#myPantryForm .formBox.small { max-width:10%; }
+#myPantryForm .formBox.med { max-width:15%; }
+#myPantryForm .formBox.big { max-width:65%; }
+.pantry-qty { max-width:25%; }
+.pantry-unit { width:15%; display:block; }

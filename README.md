@@ -1,4 +1,4 @@
-![App Screenshot](../2025_08_Team3/static/Image/screenshot.png)
+![App Screenshot](static/Image/screenshot.png)
 
 # FindMyRecipe 🍅🥗
 

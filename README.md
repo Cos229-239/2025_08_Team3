@@ -1,3 +1,5 @@
+![App Screenshot](../2025_08_Team3/static/Image/screenshot.png)
+
 # FindMyRecipe 🍅🥗
 
 FindMyRecipe is a lightweight web app where you simply type in the ingredients you have at home, and it instantly finds recipes that include them. No sign-up, no endless scrolling - just quick meal ideas powered by **Flask**, **Pandas**, and a **machine learning** search using TF-IDF + KNN.

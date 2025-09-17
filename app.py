@@ -11,27 +11,29 @@ app = Flask(__name__, template_folder="templates", static_folder="static")
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 0
 
-df = pd.read_csv("data/recipes.csv") 
+df = pd.read_csv("data/recipes.csv")
 df.reset_index(drop=True, inplace=True)
 df["rid"] = df.index.astype(int)
 
 def norm(s: str) -> str:
-
     s = "" if pd.isna(s) else str(s).lower()
     s = re.sub(r"[^a-z0-9, /+\-]", " ", s).replace("/", " ")
     return " ".join(t for t in re.split(r"[, \s]+", s) if t)
 
-df["ing_norm"] = df["ingredients"].astype(str).apply(norm)
+def _norm_title(s: str) -> str:
+    s = "" if pd.isna(s) else str(s).lower()
+    return re.sub(r"[^a-z0-9]+", " ", s).strip()
+
+df["ing_norm"]   = df["ingredients"].astype(str).apply(norm)
+df["title_norm"] = df["title"].astype(str).apply(_norm_title)  
 
 vec = TfidfVectorizer(ngram_range=(1,2), min_df=1)
 X = vec.fit_transform(df["ing_norm"])
 
 knn = NearestNeighbors(metric="cosine", algorithm="brute")
-
 knn.fit(X)
 
 def _instructions_to_text(x):
-
     try:
         if isinstance(x, str) and x.strip().startswith("["):
             lst = ast.literal_eval(x)
@@ -42,23 +44,24 @@ def _instructions_to_text(x):
         return str(x)
 
 def find_recipes(ingredients: str, k: int = 12, require_all: bool = False):
-
     q = norm(ingredients)
     if not q:
         return []
-    
+
     q_vec = vec.transform([q])
     dists, idxs = knn.kneighbors(q_vec, n_neighbors=min(k*5, X.shape[0]))
     out = df.iloc[idxs[0]].copy()
     out["ID"] = idxs[0]
-    out["score"] = (1 - dists[0])  
+    out["score"] = (1 - dists[0])
 
     if require_all:
-
         toks = set(q.split())
         out = out[out["ing_norm"].apply(lambda s: toks.issubset(set(s.split())))]
 
-    keep = ["rid" ,"title", "image", "total time", "ingredients", "instructions", "description", "score"]
+    out = out.sort_values("score", ascending=False)
+    out = out.drop_duplicates(subset="title_norm", keep="first")
+
+    keep = ["rid","title","image","total time","ingredients","instructions","description","score"]
     out = out[keep].head(k).copy()
     out["instructions"] = out["instructions"].apply(_instructions_to_text)
     return out.to_dict(orient="records")
@@ -69,7 +72,6 @@ def home():
 
 @app.get("/search")
 def search():
-
     q = request.args.get("ingredient", "")
     require_all = request.args.get("require_all", "false").lower() == "true"
     k = int(request.args.get("k", 12))
@@ -85,15 +87,19 @@ def recipes_by_ids():
         ids = [int(x) for x in ids_param.split(",") if x.strip().isdigit()]
     except Exception:
         return jsonify([])
+
     sub = df[df["rid"].isin(ids)].copy()
     keep = ["rid","title","image","total time","ingredients","instructions","description"]
     sub = sub[keep]
     sub["instructions"] = sub["instructions"].apply(_instructions_to_text)
+
     order = {rid:i for i, rid in enumerate(ids)}
     sub["__order"] = sub["rid"].map(order)
-    sub = sub.sort_values("__order").drop(columns="__order")
+    sub["title_norm"] = sub["title"].astype(str).apply(_norm_title)  
+    sub = sub.sort_values("__order").drop_duplicates(subset="title_norm", keep="first")
+    sub = sub.drop(columns=["__order","title_norm"])
+
     return jsonify(sub.to_dict(orient="records"))
 
 if __name__ == "__main__":
     app.run(debug=True)
-    

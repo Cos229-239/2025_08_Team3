@@ -57,11 +57,21 @@
     </div>
 
     <div class="quickchips" aria-label="Quick ingredient chips">
-      <button type="button" class="chip" data-chip="chicken, rice, garlic">chicken + rice</button>
-      <button type="button" class="chip" data-chip="pasta, tomato, basil">pasta + tomato</button>
-      <button type="button" class="chip" data-chip="eggs, cheese, onion">eggs + cheese</button>
-      <button type="button" class="chip" data-chip="potato, butter, garlic">potato</button>
+        <button type="button" class="chip" data-chip="chicken, rice, garlic">chicken + rice</button>
+        <button type="button" class="chip" data-chip="pasta, tomato, basil">pasta + tomato</button>
+        <button type="button" class="chip" data-chip="eggs, cheese, onion">eggs + cheese</button>
+        <button type="button" class="chip" data-chip="potato, butter, garlic">potato</button>
+
+        <button type="button" class="negative-chip" data-chip=", -potato">No potato</button>
+        <button type="button" class="negative-chip" data-chip=", -nuts">No nuts</button>
+        <button type="button" class="negative-chip" data-chip=", -chees">No cheese</button>
+        <button type="button" class="negative-chip" data-chip=", -egg">No eggs</button>
     </div>
+
+
+
+
+
   </div>
 </section>
 
@@ -302,19 +312,34 @@ function recipeCard(r){
 }
 
 async function search(){
-  const q = document.getElementById('ingredient').value.trim();
+    let q = document.getElementById('ingredient').value.trim();
+
+    //Remove Negative Traits
+    const regex = /(?:-.*?,)+?|(?:-.+?\b)+/g
+    const negatives = q.match(regex)
+    const cleanNegatives = negatives ? negatives.map((result) => { return result.replace(/[-,]/g, '') }) : null
+    q = q.replace(regex, '')
+
+
   const requireAll = document.getElementById('requireAll').checked;
   if (!q) return;
   showSkeleton();
   try{
     const url = `/search?ingredient=${encodeURIComponent(q)}&require_all=${requireAll}&k=12`;
     const res = await fetch(url);
-    const data = await res.json();
+    let data = await res.json();
     recipeStore.clear();
     const box = document.getElementById('results');
+
+      //Remove Results With Negatives
+      if (cleanNegatives) data = data.filter((result) =>  cleanNegatives.reduce((accumulator, neg) => (new RegExp(`\\b${neg}\\b`, 'g')).test(result.ingredients) ? false : accumulator, true)) 
+
+
+
     box.innerHTML = data.length ? data.map(recipeCard).join('') : `<p class="empty">No recipes found.</p>`;
     addToHistory(q, requireAll);
-  }catch(e){
+  } catch (e) {
+      console.error(e)
     document.getElementById('results').innerHTML = `<p class="empty">Something went wrong. Please try again.</p>`;
   }
 }
@@ -408,8 +433,12 @@ function wireThemeButtons(){
 document.getElementById('go').addEventListener('click', search);
 document.getElementById('ingredient').addEventListener('keydown', e => { if (e.key === 'Enter') search(); });
 document.querySelector('.quickchips').addEventListener('click', (e)=>{
-  const chip = e.target.closest('.chip'); if(!chip) return;
-  document.getElementById('ingredient').value = chip.getAttribute('data-chip');
+    const chip = e.target.closest('.chip');
+    const negChip = e.target.closest('.negative-chip');
+
+    if (chip) document.getElementById('ingredient').value = chip.getAttribute('data-chip');
+    if (negChip) document.getElementById('ingredient').value += negChip.getAttribute('data-chip');
+  
   search();
 });
 

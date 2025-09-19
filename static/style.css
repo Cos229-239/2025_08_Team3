@@ -92,6 +92,17 @@ body{
 }
 .chip:hover{ border-color:var(--accent); box-shadow: 0 0 0 3px var(--ring); transform: translateY(-1px); }
 
+.negative-chip {
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--ink);
+    padding: 7px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: .95rem;
+    transition: box-shadow .12s ease, transform .12s ease, border-color .12s ease;
+}
+
 .history{ margin:10px auto 0 }
 .history-header{ display:flex; justify-content:space-between; align-items:center; }
 .history h2{ font-size:1.05rem; margin:0 }

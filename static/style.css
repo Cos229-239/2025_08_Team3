@@ -18,12 +18,11 @@
   --shadow-2: 0 12px 28px rgba(0,0,0,.12);
   --shadow-3: 0 26px 60px rgba(0,0,0,.20);
 
-  --brand-purple-light:112, 83, 189; /* #7053BD */
-  --brand-purple-dark:56, 37, 152; /* #382598 */
-  --brand-tan-light:236, 193, 136; /* #ecc188 */
-  --brand-tan-dark:214, 160, 80; /* #d6a050 */
+  --brand-purple-light:112, 83, 189; 
+  --brand-purple-dark:56, 37, 152; 
+  --brand-tan-light:236, 193, 136; 
+  --brand-tan-dark:214, 160, 80; 
 
-  /* BOOTSTRAP CHANGE DEFAULTS */
   --bs-primary:#7053BD;
 }
 
@@ -144,6 +143,22 @@ body{
   transition: box-shadow .12s ease, transform .12s ease, border-color .12s ease;
 }
 .chip:hover{ border-color:var(--accent); box-shadow: 0 0 0 3px var(--ring); transform: translateY(-1px); }
+
+.negative-chip {
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--ink);
+  padding: 7px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: .95rem;
+  transition: box-shadow .12s ease, transform .12s ease, border-color .12s ease;
+}
+.negative-chip:hover{
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--ring);
+  transform: translateY(-1px);
+}
 
 .history{ margin:10px auto 1rem }
 .history-header{

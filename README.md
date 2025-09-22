@@ -1,4 +1,5 @@
-![App Screenshot](static/Image/screenshot.png)
+![App Screenshot](static/Image/screenshot1.png)
+![App Screenshot](static/Image/screenshot2.png)
 
 # FindMyRecipe 🍅🥗
 

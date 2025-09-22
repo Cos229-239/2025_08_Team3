@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v=28) }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v=29) }}">
 
   <link rel="icon" type="image/png"
         href="{{ url_for('static', filename='Image/FindMyRecipesBrandLogo_20250811203114.png') }}">
@@ -58,10 +58,16 @@
     </div>
 
     <div class="quickchips" aria-label="Quick ingredient chips">
+      
       <button type="button" class="chip" data-chip="chicken, rice, garlic">chicken + rice</button>
       <button type="button" class="chip" data-chip="pasta, tomato, basil">pasta + tomato</button>
       <button type="button" class="chip" data-chip="eggs, cheese, onion">eggs + cheese</button>
       <button type="button" class="chip" data-chip="potato, butter, garlic">potato</button>
+
+      <button type="button" class="negative-chip" data-chip=" --potato">No potato</button>
+      <button type="button" class="negative-chip" data-chip=" --nuts">No nuts</button>
+      <button type="button" class="negative-chip" data-chip=" --cheese">No cheese</button>
+      <button type="button" class="negative-chip" data-chip=" --eggs">No eggs</button>
     </div>
   </div>
 </section>
@@ -133,7 +139,6 @@
           <div class="d-flex gap-2 align-items-center flex-wrap">
             <span id="recipeModalTime" class="badge text-bg-light border"></span>
             <div class="ms-auto d-flex gap-2">
-              
               <button id="modalFavBtn"  class="btn btn-sm btn-outline-warning">★ Favorite</button>
             </div>
           </div>
@@ -167,7 +172,6 @@
 </div>
 
 <script>
-
 const FAV_KEY = "findmyrecipe.favs";
 function getFavs(){ try{ return new Set(JSON.parse(localStorage.getItem(FAV_KEY)||"[]")); }catch{ return new Set(); } }
 function saveFavs(s){ localStorage.setItem(FAV_KEY, JSON.stringify([...s])); }
@@ -302,19 +306,37 @@ function recipeCard(r){
 }
 
 async function search(){
-  const q = document.getElementById('ingredient').value.trim();
+  let q = document.getElementById('ingredient').value.trim();
   const requireAll = document.getElementById('requireAll').checked;
   if (!q) return;
+
+  const negRegex = /--[^\s,]+/g;
+  const negatives = (q.match(negRegex) || []);
+  const cleanNegatives = negatives
+    .map(n => n.replace(/^--/, '').replace(/[,]/g,'').trim())
+    .filter(Boolean);
+
+  q = q.replace(negRegex, '').replace(/\s{2,}/g, ' ').trim();
+
   showSkeleton();
   try{
     const url = `/search?ingredient=${encodeURIComponent(q)}&require_all=${requireAll}&k=12`;
     const res = await fetch(url);
-    const data = await res.json();
+    let data = await res.json();
+
+    if (cleanNegatives.length){
+      data = data.filter(result =>
+        !cleanNegatives.some(neg => new RegExp(`\\b${neg}\\b`, 'i').test(String(result.ingredients)))
+      );
+    }
+
     recipeStore.clear();
     const box = document.getElementById('results');
     box.innerHTML = data.length ? data.map(recipeCard).join('') : `<p class="empty">No recipes found.</p>`;
-    addToHistory(q, requireAll);
+
+    addToHistory(document.getElementById('ingredient').value.trim(), requireAll);
   }catch(e){
+    console.error(e);
     document.getElementById('results').innerHTML = `<p class="empty">Something went wrong. Please try again.</p>`;
   }
 }
@@ -407,10 +429,23 @@ function wireThemeButtons(){
 
 document.getElementById('go').addEventListener('click', search);
 document.getElementById('ingredient').addEventListener('keydown', e => { if (e.key === 'Enter') search(); });
+
+/* UPDATED: chips handler supports both positive and negative chips */
 document.querySelector('.quickchips').addEventListener('click', (e)=>{
-  const chip = e.target.closest('.chip'); if(!chip) return;
-  document.getElementById('ingredient').value = chip.getAttribute('data-chip');
-  search();
+  const chip    = e.target.closest('.chip');
+  const negChip = e.target.closest('.negative-chip');
+
+  const input = document.getElementById('ingredient');
+
+  if (chip){
+    input.value = chip.getAttribute('data-chip') || '';
+    search();
+    return;
+  }
+  if (negChip){
+    input.value = (input.value || '') + (negChip.getAttribute('data-chip') || '');
+    search();
+  }
 });
 
 document.getElementById('results').addEventListener('click', (e) => {
